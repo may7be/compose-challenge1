@@ -17,15 +17,19 @@ package com.example.androiddevchallenge
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androiddevchallenge.ui.theme.MyTheme
 
 class MainActivity : AppCompatActivity() {
+    private val viewModel by viewModels<MainViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -34,14 +38,20 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    override fun onBackPressed() {
+        if (viewModel.currentPet != null) {
+            viewModel.closePet()
+        } else {
+            super.onBackPressed()
+        }
+    }
 }
 
 // Start building your app here!
 @Composable
 fun MyApp() {
-    Surface(color = MaterialTheme.colors.background) {
-        Text(text = "Ready... Set... GO!")
-    }
+    ShowPetList()
 }
 
 @Preview("Light Theme", widthDp = 360, heightDp = 640)
@@ -57,5 +67,27 @@ fun LightPreview() {
 fun DarkPreview() {
     MyTheme(darkTheme = true) {
         MyApp()
+    }
+}
+
+@Composable
+fun ShowPetList() {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(stringResource(id = R.string.app_name))
+                }
+            )
+        },
+    ) {
+        val viewModel: MainViewModel = viewModel()
+        PetList(viewModel.pets) { pet ->
+            viewModel.showPet(pet)
+        }
+        val pet = viewModel.currentPet
+        if (pet != null) {
+            PetDetail(pet)
+        }
     }
 }
